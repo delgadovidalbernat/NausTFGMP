@@ -2,11 +2,15 @@
 
 
 #include "ActionGameMode.h"
+#include "ActionGameState.h"
+#include "ActionPlayerController.h"
+#include "ActionPlayerState.h"
 
 AActionGameMode::AActionGameMode() {
 
 	DefaultPawnClass = nullptr;
-	PlayerControllerClass = AExplorationPlayerController::StaticClass();
-	PlayerStateClass = AExplorationPlayerState::StaticClass();
+	GameStateClass = AActionGameState::StaticClass();
+	PlayerControllerClass = AActionPlayerController::StaticClass();
+	PlayerStateClass = AActionPlayerState::StaticClass();
 
 }
