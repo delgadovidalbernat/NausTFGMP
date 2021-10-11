@@ -15,7 +15,18 @@ void AActionPlayerController::BeginPlay() {
 
 	Super::BeginPlay();
 
-	APilotActionPawn* pilot = GetWorld()->SpawnActor<APilotActionPawn>(pilotClass);
-	Possess(pilot);
+	//El playerController local no ha de poder spawnejar ni posseir res, el PC del servidor fa aquestes accions i ho replica al client
+	if (HasAuthority())
+	{
+		//Crea dos localitzacions properes pero random per veure com es fa spawn de + d'un client
+		FVector spawnPosition(FMath::Rand()%200, 0.f, 100.f);
+		FRotator spawnRotation(0.f, 0.f, 0.f);
+		FActorSpawnParameters actorSpawnParameters;
+
+		APilotActionPawn* pilot = GetWorld()->SpawnActor<APilotActionPawn>(pilotClass,spawnPosition, spawnRotation, actorSpawnParameters);
+		Possess(pilot);
+
+	}
+	
 
 }
