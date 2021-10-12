@@ -7,6 +7,7 @@
 #include "ActionPlayerController.generated.h"
 
 class APilotActionPawn;
+class UMainMenu_EP;
 
 /**
  * 
@@ -22,9 +23,18 @@ public:
 
 	virtual void BeginPlay() override;
 
+	void initializeMainMenuClass();
+
+	void initializePilotPawnClass();
+
+	void loadMainMenu();
+
 
 private:
 
 	TSubclassOf<APilotActionPawn> pilotClass;
+	APilotActionPawn* pilot;
 	
+	TSubclassOf<UMainMenu_EP> mainMenuClass;
+	UMainMenu_EP* mainMenu;
 };
