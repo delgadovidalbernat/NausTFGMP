@@ -23,11 +23,13 @@ public:
 
 	virtual void BeginPlay() override;
 
-	void initializeMainMenuClass();
+	void InitializeMainMenuClass();
 
-	void initializePilotPawnClass();
+	void InitializePilotPawnClass();
 
-	void loadMainMenu();
+	void LoadMainMenu();
+
+	void ShowNotLockingMouseCursor(UUserWidget* UIMenu);
 
 
 private:

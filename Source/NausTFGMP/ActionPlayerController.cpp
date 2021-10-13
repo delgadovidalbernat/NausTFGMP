@@ -7,9 +7,9 @@
 
 AActionPlayerController::AActionPlayerController() {
 
-	initializePilotPawnClass();
+	InitializePilotPawnClass();
 
-	initializeMainMenuClass();
+	InitializeMainMenuClass();
 
 	
 }
@@ -23,23 +23,23 @@ void AActionPlayerController::BeginPlay() {
 	pilot = GetWorld()->SpawnActor<APilotActionPawn>(pilotClass);
 	Possess(pilot);
 
-	loadMainMenu();
+	LoadMainMenu();
 }
 
-void AActionPlayerController::initializeMainMenuClass()
+void AActionPlayerController::InitializeMainMenuClass()
 {
 	ConstructorHelpers::FClassFinder <UMainMenu_EP> mainMenuClassBP(TEXT("/Game/Gui/Menu/MainMenu_BP"));
 	mainMenuClass = mainMenuClassBP.Class;
 }
 
-void AActionPlayerController::initializePilotPawnClass()
+void AActionPlayerController::InitializePilotPawnClass()
 {
 
 	ConstructorHelpers::FClassFinder <APilotActionPawn> pilotClassBP(TEXT("/Game/Blueprints/Action/PilotActionPawn_BP"));
 	pilotClass = pilotClassBP.Class;
 }
 
-void AActionPlayerController::loadMainMenu()
+void AActionPlayerController::LoadMainMenu()
 {
 
 	//Unicamente queremos que la HUD la tengan los clientes y alimentarla con datos del servidor, en el caso de un solo jugador 
@@ -49,5 +49,17 @@ void AActionPlayerController::loadMainMenu()
 
 		mainMenu = CreateWidget<UMainMenu_EP>(this, mainMenuClass);
 		mainMenu->AddToViewport();
+		ShowNotLockingMouseCursor(mainMenu);
 	}
+}
+
+void AActionPlayerController::ShowNotLockingMouseCursor(UUserWidget* UIMenu)
+{
+
+	FInputModeUIOnly InputModeData;
+	InputModeData.SetWidgetToFocus(UIMenu->TakeWidget());
+	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+	SetInputMode(InputModeData);
+	bShowMouseCursor = true;
 }
