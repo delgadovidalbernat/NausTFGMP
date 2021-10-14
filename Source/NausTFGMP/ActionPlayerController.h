@@ -29,7 +29,15 @@ public:
 
 	void LoadMainMenu();
 
+	UFUNCTION()
+	void UnloadMainMenu();
+
 	void ShowNotLockingMouseCursor(UUserWidget* UIMenu);
+
+	void HideAndLockMouseCursor(UUserWidget* UIMenu);
+
+	UFUNCTION()
+	void ExitGame();
 
 
 private:
