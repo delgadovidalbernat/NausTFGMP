@@ -17,5 +17,7 @@ class NAUSTFGMP_API AActionGameMode : public AGameMode
 public:
 
 	AActionGameMode();
+
+
 	
 };
