@@ -27,12 +27,13 @@ void AActionPlayerController::BeginPlay() {
 	pilot = GetWorld()->SpawnActor<APilotActionPawn>(pilotClass);
 	Possess(pilot);
 
+	CreaMainMenu();
+
 	//Crea el widget de tipo mainMenu y lo muestra
 	LoadMainMenu();
 
 	//Binding signals
-	mainMenu->signalOnClickExit.AddDynamic(this, &AActionPlayerController::ExitGame);
-	mainMenu->signalOnClickPlay.AddDynamic(this, &AActionPlayerController::UnloadMainMenu);
+	BindSignals();
 }
 
 void AActionPlayerController::InitializeMainMenuClass()
@@ -54,10 +55,11 @@ void AActionPlayerController::LoadMainMenu()
 
 	//Unicamente queremos que la HUD la tengan los clientes y alimentarla con datos del servidor, en el caso de un solo jugador 
 	//si serà la autoridad por lo tanto si està controlado localmente también mostramos el menu
-	if (pilot->IsLocallyControlled() || !HasAuthority())
+
+
+	if (IsLocalPlayerController())
 	{
 
-		mainMenu = CreateWidget<UMainMenu_EP>(this, mainMenuClass);
 		mainMenu->bIsFocusable = true;
 		mainMenu->AddToViewport();
 		ShowNotLockingMouseCursor(mainMenu);
@@ -69,7 +71,7 @@ void AActionPlayerController::UnloadMainMenu()
 
 	//Unicamente queremos que la HUD la tengan los clientes y alimentarla con datos del servidor, en el caso de un solo jugador 
 	//si serà la autoridad por lo tanto si està controlado localmente también mostramos el menu
-	if (pilot->IsLocallyControlled() || !HasAuthority())
+	if (IsLocalPlayerController())
 	{
 
 		mainMenu->RemoveFromViewport();
@@ -100,6 +102,28 @@ void AActionPlayerController::HideAndLockMouseCursor(UUserWidget* UIMenu)
 
 	SetShowMouseCursor(false);
 	SetInputMode(InputModeData);
+}
+
+void AActionPlayerController::BindSignals()
+{
+
+	//El servidor no puede crear widget ya que no tiene pantalla, por lo tanto si accedemos a un widget siendo el servidor crashea
+	if(IsLocalPlayerController())
+	{
+
+		mainMenu->signalOnClickExit.AddDynamic(this, &AActionPlayerController::ExitGame); 
+		mainMenu->signalOnClickPlay.AddDynamic(this, &AActionPlayerController::UnloadMainMenu);
+	}
+}
+
+void AActionPlayerController::CreaMainMenu()
+{
+
+	if (IsLocalPlayerController())
+	{
+		mainMenu = CreateWidget<UMainMenu_EP>(this, mainMenuClass);
+
+	}
 }
 
 void AActionPlayerController::ExitGame()

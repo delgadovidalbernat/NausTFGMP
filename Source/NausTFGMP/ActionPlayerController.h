@@ -36,6 +36,10 @@ public:
 
 	void HideAndLockMouseCursor(UUserWidget* UIMenu);
 
+	void BindSignals();
+
+	void CreaMainMenu();
+
 	UFUNCTION()
 	void ExitGame();
 
