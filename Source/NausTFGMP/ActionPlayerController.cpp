@@ -2,12 +2,24 @@
 
 
 #include "ActionPlayerController.h"
+
+#include "ActionGameMode.h"
 #include "PilotActionPawn.h"
+#include "ArtilleryActionPawn.h"
+#include "ActionPawn.h"
+#include "GameFramework/GameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 AActionPlayerController::AActionPlayerController() {
 
-	ConstructorHelpers::FClassFinder <APilotActionPawn> refBlueprint(TEXT("/Game/Blueprints/Action/PilotActionPawn_BP"));
-	pilotClass = refBlueprint.Class;
+	bReplicates = true;
+
+	ConstructorHelpers::FClassFinder <APilotActionPawn> refPilotActionPawnBP(TEXT("/Game/Blueprints/Action/PilotActionPawn_BP"));
+	pilotClass = refPilotActionPawnBP.Class;
+
+	ConstructorHelpers::FClassFinder <AArtilleryActionPawn> refArtilleryActionPawnBP(TEXT("/Game/Blueprints/Action/ArtilleryActionPawn_BP"));
+	artilleryClass = refArtilleryActionPawnBP.Class;
+
 }
 
 
@@ -15,18 +27,61 @@ void AActionPlayerController::BeginPlay() {
 
 	Super::BeginPlay();
 
-	//El playerController local no ha de poder spawnejar ni posseir res, el PC del servidor fa aquestes accions i ho replica al client
-	if (HasAuthority())
-	{
-		//Crea dos localitzacions properes pero random per veure com es fa spawn de + d'un client
-		FVector spawnPosition(FMath::Rand()%200, 0.f, 100.f);
-		FRotator spawnRotation(0.f, 0.f, 0.f);
-		FActorSpawnParameters actorSpawnParameters;
 
-		APilotActionPawn* pilot = GetWorld()->SpawnActor<APilotActionPawn>(pilotClass,spawnPosition, spawnRotation, actorSpawnParameters);
-		Possess(pilot);
-
-	}
-	
+	SetPilot();
 
 }
+
+UClass* AActionPlayerController::GetPlayerPawnClass()
+{
+	return myPawn;
+}
+
+void AActionPlayerController::ServerSetPlayerControllerPawn_Implementation(TSubclassOf<AActionPawn> MyPawnClass)
+{
+
+	myPawn = MyPawnClass;
+	
+	
+	if (UWorld* World = GetWorld())
+	{
+		if (AActionGameMode* GameMode = Cast<AActionGameMode>(World->GetAuthGameMode()))
+		{
+			AActionPlayerController* controllerRef = this;
+
+			//Muy importante destruir el Pawn assignado al PlayerController antes del beginPlay, ya que en caso contrario el restart no accionara GetDefaultPawnClassForController
+			//sino que reusaarà el existente
+			controllerRef->GetPawn()->Destroy();
+			GameMode->RestartPlayer(controllerRef);
+		}
+	}
+	
+}
+
+
+bool AActionPlayerController::ServerSetPlayerControllerPawn_Validate(TSubclassOf<AActionPawn> MyPawnClass)
+{
+
+	if(MyPawnClass)
+	{
+
+		return true;
+	}
+
+	return false;
+}
+
+void AActionPlayerController::SetPilot_Implementation()
+{
+	if(IsLocalController())
+		ServerSetPlayerControllerPawn(pilotClass);
+}
+
+
+void AActionPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AActionPlayerController, myPawn);
+}
+

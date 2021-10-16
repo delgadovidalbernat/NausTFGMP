@@ -6,6 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "ActionGameMode.generated.h"
 
+class AActionPawn;
 /**
  * 
  */
@@ -17,5 +18,15 @@ class NAUSTFGMP_API AActionGameMode : public AGameMode
 public:
 
 	AActionGameMode();
+
+	void InitializeDefaultPawnClass();
+
+	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+
+	virtual void RestartPlayer(AController* NewPlayer) override;
+
+private:
+
+	TSubclassOf<AActionPawn> pilotClass;
 	
 };

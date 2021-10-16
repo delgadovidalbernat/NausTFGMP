@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "ActionPlayerController.generated.h"
 
+class AArtilleryActionPawn;
+class AActionPawn;
 class APilotActionPawn;
 
 /**
@@ -22,9 +24,28 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UClass* GetPlayerPawnClass();
+
+	
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetPlayerControllerPawn(TSubclassOf<AActionPawn> MyPawnClass);
+	void ServerSetPlayerControllerPawn_Implementation(TSubclassOf<AActionPawn> MyPawnClass);
+	bool ServerSetPlayerControllerPawn_Validate(TSubclassOf<AActionPawn> MyPawnClass);
+
+	UFUNCTION(Client, Reliable)
+	void SetPilot();
+	void SetPilot_Implementation();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 
 private:
 
+	UPROPERTY(Replicated)
+	TSubclassOf<AActionPawn> myPawn;
+
 	TSubclassOf<APilotActionPawn> pilotClass;
+	TSubclassOf<AArtilleryActionPawn> artilleryClass;
 	
 };
