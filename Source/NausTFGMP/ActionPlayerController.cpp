@@ -2,20 +2,38 @@
 
 
 #include "ActionPlayerController.h"
+
+#include "ActionGameMode.h"
 #include "PilotActionPawn.h"
+#include "ArtilleryActionPawn.h"
+#include "ActionPawn.h"
+#include "GameFramework/GameModeBase.h"
+#include "Net/UnrealNetwork.h"
 #include "Gui/Menu/MainMenu_EP.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 AActionPlayerController::AActionPlayerController() {
 
+	//El actor se replica para que se tenga en cuenta las modificaciones del servidor, por ejemplo el cambiï¿½ de defaultPawn
+	bReplicates = true;
+
 	//Busca el PilotActionBP y guarda la referencia de la clase
 	InitializePilotPawnClass();
+
+	ConstructorHelpers::FClassFinder <AArtilleryActionPawn> refArtilleryActionPawnBP(TEXT("/Game/Blueprints/Action/ArtilleryActionPawn_BP"));
+	artilleryClass = refArtilleryActionPawnBP.Class;
 
 	//Busca el mainMenuBP y guarda la referencia de la clase
 	InitializeMainMenuClass();
 
-	
+}
+
+void AActionPlayerController::InitializePilotPawnClass()
+{
+
+	ConstructorHelpers::FClassFinder <APilotActionPawn> pilotClassBP(TEXT("/Game/Blueprints/Action/PilotActionPawn_BP"));
+	pilotClass = pilotClassBP.Class;
 }
 
 
@@ -23,9 +41,8 @@ void AActionPlayerController::BeginPlay() {
 
 	Super::BeginPlay();
 
-
-	pilot = GetWorld()->SpawnActor<APilotActionPawn>(pilotClass);
-	Possess(pilot);
+	//Por defecto el usuario usarï¿½ un pawn de tipo PilotAction, en caso de no haver pawn por defecto gameMode usara defaultPawn de GameMode
+	SetPilot();
 
 	CreaMainMenu();
 
@@ -34,6 +51,84 @@ void AActionPlayerController::BeginPlay() {
 
 	//Binding signals
 	BindSignals();
+
+}
+
+UClass* AActionPlayerController::GetPlayerPawnClass()
+{
+	return myPawn;
+}
+
+
+void AActionPlayerController::ServerSetPlayerControllerPawn_Implementation(TSubclassOf<AActionPawn> MyPawnClass)
+{
+
+	myPawn = MyPawnClass;
+	
+	if (UWorld* World = GetWorld())
+	{
+		//Podemos hacer get de GameMode ya que sabemos que esto se ejecutara en el servidor, igualmente usamos un condicional por prevencion
+		if (AActionGameMode* GameMode = Cast<AActionGameMode>(World->GetAuthGameMode()))
+		{
+			AActionPlayerController* controllerRef = this;
+
+			//Muy importante destruir el Pawn assignado al PlayerController antes del RestartPlayer, ya que en caso contrario el restart no llamara GetDefaultPawnClassForController
+			//sino que reusarï¿½ el existente
+			controllerRef->GetPawn()->Destroy();
+			GameMode->RestartPlayer(controllerRef);
+		}
+	}
+	
+}
+
+
+bool AActionPlayerController::ServerSetPlayerControllerPawn_Validate(TSubclassOf<AActionPawn> MyPawnClass)
+{
+	//Comprovar que el pawn enviado por el usuario no es nullptr, no es necessario mas comprovaciones ya que el parametro se ha reducido a AActionPawn
+	if(MyPawnClass)
+	{
+
+		return true;
+	}
+
+	return false;
+}
+
+void AActionPlayerController::SetPilot_Implementation()
+{
+	//El cliente debe decidir que pawn quiere, de otra manera si usaramos otro metodo mas personalizado para elegir el pawn y el servidor tambiï¿½n ejecuta esta instruccion todos tendrian el mismo pawn definido por el servidor
+	if (IsLocalController())
+	{
+		ServerSetPlayerControllerPawn(pilotClass);
+
+	}
+}
+
+void AActionPlayerController::SetArtillery_Implementation()
+{
+	//El cliente debe decidir que pawn quiere, de otra manera si usaramos otro metodo mas personalizado para elegir el pawn y el servidor tambiï¿½n ejecuta esta instruccion todos tendrian el mismo pawn definido por el servidor
+	if (IsLocalController())
+	{
+		ServerSetPlayerControllerPawn(artilleryClass);
+
+	}
+}
+
+
+//parametro 0 hace pawn de playerController ser pilot, cualquier otro lo transforma en artillery
+void AActionPlayerController::SetPlayerControllerPawn(int index)
+{
+
+	//No es necessario comprovar quien ejecuta esta funciï¿½n ya que en SetArtillery y setPawn ya se mira que sea en local
+
+	if(index)
+	{
+		SetArtillery();
+	}else
+	{
+
+		SetPilot();
+	}
 }
 
 void AActionPlayerController::InitializeMainMenuClass()
@@ -54,7 +149,7 @@ void AActionPlayerController::LoadMainMenu()
 {
 
 	//Unicamente queremos que la HUD la tengan los clientes y alimentarla con datos del servidor, en el caso de un solo jugador 
-	//si serà la autoridad por lo tanto si està controlado localmente también mostramos el menu
+	//si serÃ  la autoridad por lo tanto si estÃ  controlado localmente tambiÃ©n mostramos el menu
 
 
 	if (IsLocalPlayerController())
@@ -70,7 +165,7 @@ void AActionPlayerController::UnloadMainMenu()
 {
 
 	//Unicamente queremos que la HUD la tengan los clientes y alimentarla con datos del servidor, en el caso de un solo jugador 
-	//si serà la autoridad por lo tanto si està controlado localmente también mostramos el menu
+	//si serÃ  la autoridad por lo tanto si estÃ  controlado localmente tambiÃ©n mostramos el menu
 	if (IsLocalPlayerController())
 	{
 
@@ -132,3 +227,12 @@ void AActionPlayerController::ExitGame()
 	UKismetSystemLibrary::QuitGame(GetWorld(), this, EQuitPreference::Quit, false);
 
 }
+
+
+void AActionPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AActionPlayerController, myPawn);
+}
+
