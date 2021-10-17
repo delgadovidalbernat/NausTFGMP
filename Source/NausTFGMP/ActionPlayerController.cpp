@@ -10,6 +10,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Gui/Menu/MainMenu_EP.h"
+#include "Gui/Menu/InGameMenu_EP.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -27,6 +28,10 @@ AActionPlayerController::AActionPlayerController() {
 	//Busca el mainMenuBP y guarda la referencia de la clase
 	InitializeMainMenuClass();
 
+	InitializeInGameMenuClass();
+
+	isInGameMenuOpen = false;
+
 }
 
 
@@ -39,6 +44,8 @@ void AActionPlayerController::BeginPlay() {
 
 	CreaMainMenu();
 
+	CreaInGameMenu();
+
 	//Crea el widget de tipo mainMenu y lo muestra
 	LoadMainMenu();
 
@@ -49,14 +56,14 @@ void AActionPlayerController::BeginPlay() {
 
 UClass* AActionPlayerController::GetPlayerPawnClass()
 {
-	return myPawn;
+	return myPawnClass;
 }
 
 
 void AActionPlayerController::ServerSetPlayerControllerPawn_Implementation(TSubclassOf<AActionPawn> MyPawnClass)
 {
 
-	myPawn = MyPawnClass;
+	myPawnClass = MyPawnClass;
 	
 	if (UWorld* World = GetWorld())
 	{
@@ -69,6 +76,7 @@ void AActionPlayerController::ServerSetPlayerControllerPawn_Implementation(TSubc
 			//sino que reusar� el existente
 			controllerRef->GetPawn()->Destroy();
 			GameMode->RestartPlayer(controllerRef);
+
 		}
 	}
 	
@@ -94,7 +102,14 @@ void AActionPlayerController::SetPilot_Implementation()
 	{
 		ServerSetPlayerControllerPawn(pilotClass);
 
+		if(isInGameMenuOpen)
+		{
+
+			UnloadInGameMenu();
+		}
+
 	}
+
 }
 
 void AActionPlayerController::SetArtillery_Implementation()
@@ -104,7 +119,13 @@ void AActionPlayerController::SetArtillery_Implementation()
 	{
 		ServerSetPlayerControllerPawn(artilleryClass);
 
+		if (isInGameMenuOpen)
+		{
+
+			UnloadInGameMenu();
+		}
 	}
+
 }
 
 
@@ -129,6 +150,13 @@ void AActionPlayerController::InitializeMainMenuClass()
 	ConstructorHelpers::FClassFinder <UMainMenu_EP> mainMenuClassBP(TEXT("/Game/Gui/Menu/MainMenu_BP"));
 	mainMenuClass = mainMenuClassBP.Class;
 	
+}
+
+void AActionPlayerController::InitializeInGameMenuClass()
+{
+
+	ConstructorHelpers::FClassFinder <UInGameMenu_EP> inGameMenuClassBP(TEXT("/Game/Gui/Menu/InGameMenu_BP"));
+	inGameMenuClass = inGameMenuClassBP.Class;
 }
 
 void AActionPlayerController::InitializePilotPawnClass()
@@ -170,6 +198,33 @@ void AActionPlayerController::UnloadMainMenu()
 	}
 }
 
+void AActionPlayerController::LoadInGameMenu()
+{
+
+	if (IsLocalPlayerController())
+	{
+		isInGameMenuOpen = true;
+		inGameMenu->bIsFocusable = true;
+		inGameMenu->AddToViewport();
+		ShowNotLockingMouseCursor(inGameMenu);
+	}
+}
+
+void AActionPlayerController::UnloadInGameMenu()
+{
+
+	if (IsLocalPlayerController())
+	{
+
+		isInGameMenuOpen = false;
+		inGameMenu->RemoveFromViewport();
+
+		HideAndLockMouseCursor(inGameMenu);
+		inGameMenu->bIsFocusable = false;
+
+	}
+}
+
 void AActionPlayerController::ShowNotLockingMouseCursor(UUserWidget* UIMenu)
 {
 
@@ -201,6 +256,12 @@ void AActionPlayerController::BindSignals()
 
 		mainMenu->signalOnClickExit.AddDynamic(this, &AActionPlayerController::ExitGame); 
 		mainMenu->signalOnClickPlay.AddDynamic(this, &AActionPlayerController::UnloadMainMenu);
+
+		inGameMenu->signalOnClickExit.AddDynamic(this, &AActionPlayerController::ExitGame);
+		inGameMenu->signalOnClickUsePilotAsPlayerControllerPawn.AddDynamic(this, &AActionPlayerController::SetPilot);
+		inGameMenu->signalOnClickUseArtilleryAsPlayerControllerPawn.AddDynamic(this, &AActionPlayerController::SetArtillery);
+		inGameMenu->signalOnClickBack.AddDynamic(this, &AActionPlayerController::UnloadInGameMenu);
+
 	}
 }
 
@@ -214,6 +275,16 @@ void AActionPlayerController::CreaMainMenu()
 	}
 }
 
+void AActionPlayerController::CreaInGameMenu()
+{
+
+	if (IsLocalPlayerController())
+	{
+		inGameMenu = CreateWidget<UInGameMenu_EP>(this, inGameMenuClass);
+
+	}
+}
+
 void AActionPlayerController::ExitGame()
 {
 	
@@ -221,11 +292,19 @@ void AActionPlayerController::ExitGame()
 
 }
 
+void AActionPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if(IsLocalPlayerController())
+		InputComponent->BindAction("OpenInGameMenu", EInputEvent::IE_Pressed, this, &AActionPlayerController::LoadInGameMenu);
+}
+
 
 void AActionPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AActionPlayerController, myPawn);
+	DOREPLIFETIME(AActionPlayerController, myPawnClass);
 }
 

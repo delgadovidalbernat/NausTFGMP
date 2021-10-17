@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ActionPlayerController.generated.h"
 
+class UInGameMenu_EP;
 class AArtilleryActionPawn;
 class AActionPawn;
 class APilotActionPawn;
@@ -56,12 +57,20 @@ public:
 
 	void InitializeMainMenuClass();
 
+	void InitializeInGameMenuClass();
+
 	void InitializePilotPawnClass();
 
 	void LoadMainMenu();
 
 	UFUNCTION()
 	void UnloadMainMenu();
+
+	UFUNCTION()
+	void LoadInGameMenu();
+
+	UFUNCTION()
+	void UnloadInGameMenu();
 
 	void ShowNotLockingMouseCursor(UUserWidget* UIMenu);
 
@@ -71,15 +80,19 @@ public:
 
 	void CreaMainMenu();
 
+	void CreaInGameMenu();
+
 	UFUNCTION()
 	void ExitGame();
+
+	virtual void SetupInputComponent() override;
 
 
 private:
 
 	//Pawn definitivo que el usuario usara, esta replicado ya que esta variable sera enviada al servidor y cuyando el servidor la modifique queremos que replique esa informacion al cliente
 	UPROPERTY(Replicated)
-	TSubclassOf<AActionPawn> myPawn;
+	TSubclassOf<AActionPawn> myPawnClass;
 
 	//Referencia a classes de possibles pawn entre las que el usuario puede escoger
 	TSubclassOf<APilotActionPawn> pilotClass;
@@ -87,5 +100,10 @@ private:
 
 	TSubclassOf<UMainMenu_EP> mainMenuClass;
 	UMainMenu_EP* mainMenu;
-	
+
+	TSubclassOf<UInGameMenu_EP> inGameMenuClass;
+	UInGameMenu_EP* inGameMenu;
+
+
+	bool isInGameMenuOpen;
 };
