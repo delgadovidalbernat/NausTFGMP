@@ -10,23 +10,15 @@
 
 AActionGameMode::AActionGameMode() {
 
-	InitializeDefaultPawnClass();
-
-	//Este valor es null ya que asi el moto va a usar el return de GetDefaultPawnClassForController_Implementation
-	//DefaultPawnClass = nullptr;
-
+	//Clase por defecto de GameState
 	GameStateClass = AActionGameState::StaticClass();
+	//Clase por defecto de PlayerController
 	PlayerControllerClass = AActionPlayerController::StaticClass();
+	//Clase por defecto de PlayerState
 	PlayerStateClass = AActionPlayerState::StaticClass();
 
 }
 
-void AActionGameMode::InitializeDefaultPawnClass()
-{
-
-	ConstructorHelpers::FClassFinder <APilotActionPawn> refBlueprint(TEXT("/Game/Blueprints/Action/PilotActionPawn_BP"));
-	pilotClass = refBlueprint.Class;
-}
 
 UClass* AActionGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
@@ -35,7 +27,7 @@ UClass* AActionGameMode::GetDefaultPawnClassForController_Implementation(AContro
 
 	if(MyController)
 	{
-
+		//Funcion en PlayerController que retorna el pawn escogido por el usuario
 		UClass* defaultPawnClass = MyController->GetPlayerPawnClass();
 
 		if(defaultPawnClass)
@@ -47,7 +39,6 @@ UClass* AActionGameMode::GetDefaultPawnClassForController_Implementation(AContro
 	}
 
 	//En caso que defaultPawnClass sea null retun el defaultPawn de GameMode
-
 	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
 

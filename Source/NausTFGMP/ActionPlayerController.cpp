@@ -12,8 +12,10 @@
 
 AActionPlayerController::AActionPlayerController() {
 
+	//El actor se replica para que se tenga en cuenta las modificaciones del servidor, por ejemplo el cambió de defaultPawn
 	bReplicates = true;
 
+	//Referencias a las classes de los distintos pawn que puede usar el usuario
 	ConstructorHelpers::FClassFinder <APilotActionPawn> refPilotActionPawnBP(TEXT("/Game/Blueprints/Action/PilotActionPawn_BP"));
 	pilotClass = refPilotActionPawnBP.Class;
 
@@ -27,7 +29,7 @@ void AActionPlayerController::BeginPlay() {
 
 	Super::BeginPlay();
 
-
+	//Por defecto el usuario usarà un pawn de tipo PilotAction, en caso de no haver pawn por defecto gameMode usara defaultPawn de GameMode
 	SetPilot();
 
 }
@@ -37,20 +39,21 @@ UClass* AActionPlayerController::GetPlayerPawnClass()
 	return myPawn;
 }
 
+
 void AActionPlayerController::ServerSetPlayerControllerPawn_Implementation(TSubclassOf<AActionPawn> MyPawnClass)
 {
 
 	myPawn = MyPawnClass;
 	
-	
 	if (UWorld* World = GetWorld())
 	{
+		//Podemos hacer get de GameMode ya que sabemos que esto se ejecutara en el servidor, igualmente usamos un condicional por prevencion
 		if (AActionGameMode* GameMode = Cast<AActionGameMode>(World->GetAuthGameMode()))
 		{
 			AActionPlayerController* controllerRef = this;
 
-			//Muy importante destruir el Pawn assignado al PlayerController antes del beginPlay, ya que en caso contrario el restart no accionara GetDefaultPawnClassForController
-			//sino que reusaarà el existente
+			//Muy importante destruir el Pawn assignado al PlayerController antes del RestartPlayer, ya que en caso contrario el restart no llamara GetDefaultPawnClassForController
+			//sino que reusarà el existente
 			controllerRef->GetPawn()->Destroy();
 			GameMode->RestartPlayer(controllerRef);
 		}
@@ -61,7 +64,7 @@ void AActionPlayerController::ServerSetPlayerControllerPawn_Implementation(TSubc
 
 bool AActionPlayerController::ServerSetPlayerControllerPawn_Validate(TSubclassOf<AActionPawn> MyPawnClass)
 {
-
+	//Comprovar que el pawn enviado por el usuario no es nullptr, no es necessario mas comprovaciones ya que el parametro se ha reducido a AActionPawn
 	if(MyPawnClass)
 	{
 
@@ -73,8 +76,39 @@ bool AActionPlayerController::ServerSetPlayerControllerPawn_Validate(TSubclassOf
 
 void AActionPlayerController::SetPilot_Implementation()
 {
-	if(IsLocalController())
+	//El cliente debe decidir que pawn quiere, de otra manera si usaramos otro metodo mas personalizado para elegir el pawn y el servidor también ejecuta esta instruccion todos tendrian el mismo pawn definido por el servidor
+	if (IsLocalController())
+	{
 		ServerSetPlayerControllerPawn(pilotClass);
+
+	}
+}
+
+void AActionPlayerController::SetArtillery_Implementation()
+{
+	//El cliente debe decidir que pawn quiere, de otra manera si usaramos otro metodo mas personalizado para elegir el pawn y el servidor también ejecuta esta instruccion todos tendrian el mismo pawn definido por el servidor
+	if (IsLocalController())
+	{
+		ServerSetPlayerControllerPawn(artilleryClass);
+
+	}
+}
+
+
+//parametro 0 hace pawn de playerController ser pilot, cualquier otro lo transforma en artillery
+void AActionPlayerController::SetPlayerControllerPawn(int index)
+{
+
+	//No es necessario comprovar quien ejecuta esta función ya que en SetArtillery y setPawn ya se mira que sea en local
+
+	if(index)
+	{
+		SetArtillery();
+	}else
+	{
+
+		SetPilot();
+	}
 }
 
 
