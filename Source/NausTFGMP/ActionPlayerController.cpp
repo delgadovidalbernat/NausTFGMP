@@ -29,13 +29,6 @@ AActionPlayerController::AActionPlayerController() {
 
 }
 
-void AActionPlayerController::InitializePilotPawnClass()
-{
-
-	ConstructorHelpers::FClassFinder <APilotActionPawn> pilotClassBP(TEXT("/Game/Blueprints/Action/PilotActionPawn_BP"));
-	pilotClass = pilotClassBP.Class;
-}
-
 
 void AActionPlayerController::BeginPlay() {
 
