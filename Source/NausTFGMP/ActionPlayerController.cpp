@@ -229,9 +229,11 @@ void AActionPlayerController::ShowNotLockingMouseCursor(UUserWidget* UIMenu)
 {
 
 	FInputModeUIOnly InputModeData;
+
+
 	InputModeData.SetWidgetToFocus(UIMenu->TakeWidget());
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-
+		
 	SetInputMode(InputModeData);
 	SetShowMouseCursor(true);
 }
