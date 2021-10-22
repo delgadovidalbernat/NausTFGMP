@@ -3,3 +3,11 @@
 
 #include "ActionCamera.h"
 
+AActionCamera::AActionCamera()
+{
+
+	if(GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Camera Lista");
+
+	
+}

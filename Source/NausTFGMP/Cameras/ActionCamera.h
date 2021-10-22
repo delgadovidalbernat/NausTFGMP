@@ -13,5 +13,9 @@ UCLASS()
 class NAUSTFGMP_API AActionCamera : public ACameraActor
 {
 	GENERATED_BODY()
-	
+
+
+public:
+
+	AActionCamera();
 };

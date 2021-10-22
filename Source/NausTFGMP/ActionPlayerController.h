@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ActionPlayerController.generated.h"
 
+class AActionCamera;
 class UInGameMenu_EP;
 class AArtilleryActionPawn;
 class AActionPawn;
@@ -86,13 +87,19 @@ public:
 	void ExitGame();
 
 	virtual void SetupInputComponent() override;
+	
+	void SetViewPilot();
 
+	
+	virtual void OnPossess(APawn* InPawn) override;
 
 private:
 
 	//Pawn definitivo que el usuario usara, esta replicado ya que esta variable sera enviada al servidor y cuyando el servidor la modifique queremos que replique esa informacion al cliente
 	UPROPERTY(Replicated)
 	TSubclassOf<AActionPawn> myPawnClass;
+
+	AActionPawn* myPawn;
 
 	//Referencia a classes de possibles pawn entre las que el usuario puede escoger
 	TSubclassOf<APilotActionPawn> pilotClass;
@@ -108,4 +115,5 @@ private:
 	UInGameMenu_EP* inGameMenu;
 
 	bool isInGameMenuOpen;
+
 };

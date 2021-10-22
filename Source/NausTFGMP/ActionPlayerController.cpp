@@ -7,6 +7,8 @@
 #include "PilotActionPawn.h"
 #include "ArtilleryActionPawn.h"
 #include "ActionPawn.h"
+#include "Cameras/ActionCamera.h"
+#include "Cameras/ActionCameraManager.h"
 #include "GameFramework/GameModeBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Gui/Menu/MainMenu_EP.h"
@@ -31,6 +33,8 @@ AActionPlayerController::AActionPlayerController() {
 	InitializeInGameMenuClass();
 
 	isInGameMenuOpen = false;
+
+	PlayerCameraManagerClass = AActionCameraManager::StaticClass();
 
 }
 
@@ -108,6 +112,8 @@ void AActionPlayerController::SetPilot_Implementation()
 			UnloadInGameMenu();
 		}
 
+
+		
 	}
 
 }
@@ -300,6 +306,59 @@ void AActionPlayerController::SetupInputComponent()
 
 	if(IsLocalPlayerController())
 		InputComponent->BindAction("OpenInGameMenu", EInputEvent::IE_Pressed, this, &AActionPlayerController::LoadInGameMenu);
+}
+
+void AActionPlayerController::SetViewPilot()
+{
+	APilotActionPawn* myPilotPawn = dynamic_cast<APilotActionPawn*>(myPawn);
+
+	if (myPilotPawn)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "Tengo pawn");
+		AActionCamera* myPawnCamera = myPilotPawn->getActionCamera();
+
+		if (myPawnCamera)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "Tengo cam");
+			SetViewTarget(myPawnCamera);
+		}else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "No tengo cam");
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "No tengo pawn");
+	}
+	
+}
+
+
+void AActionPlayerController::OnPossess(APawn* MovieSceneBlends)
+{
+	Super::OnPossess(MovieSceneBlends);
+
+	if (MovieSceneBlends)
+		myPawn = dynamic_cast<AActionPawn*>(MovieSceneBlends);
+
+	if(myPawn)
+	{
+
+		APilotActionPawn* myPilotPawn = dynamic_cast<APilotActionPawn*>(myPawn);
+
+		if(myPilotPawn)
+		{
+			
+			myPilotPawn->spawnDefaultCamera();
+			SetViewPilot();
+
+		}else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "No tengo Pilotpawn para poseer");
+
+		}
+
+	}
 }
 
 
