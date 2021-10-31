@@ -7,6 +7,7 @@
 #include "PilotActionPawn.h"
 #include "ArtilleryActionPawn.h"
 #include "ActionPawn.h"
+#include "Cameras/ActionCameraComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Gui/Menu/MainMenu_EP.h"
@@ -107,6 +108,11 @@ void AActionPlayerController::SetPilot_Implementation()
 
 			UnloadInGameMenu();
 		}
+
+		APilotActionPawn* myPawn = dynamic_cast<APilotActionPawn*>(GetPawn());
+
+		
+		setViewCamera();
 
 	}
 
@@ -301,6 +307,43 @@ void AActionPlayerController::SetupInputComponent()
 	if(IsLocalPlayerController())
 		InputComponent->BindAction("OpenInGameMenu", EInputEvent::IE_Pressed, this, &AActionPlayerController::LoadInGameMenu);
 }
+
+void AActionPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	setViewCamera();
+	
+}
+
+
+void AActionPlayerController::setViewCamera()
+{
+
+	//Set camera position
+
+	if (APilotActionPawn* pawn = Cast<APilotActionPawn>(GetPawn()))
+	{
+
+		FVector Location = GetPawn()->GetActorLocation();
+		FVector zDirection(0.f, 0.f, 1.f);
+		FVector xDirection(1.f, 0.f, 0.f);
+
+		FRotator Rotation = GetPawn()->GetActorRotation();
+		FRotator yRotation(0.f, 1.f, 0.f);
+
+		Location -= xDirection * 300;
+		Rotation += yRotation * 15.f;
+
+		UActionCameraComponent* camera = pawn->getCamera();
+		camera->SetRelativeLocation(Location);
+		//camera->SetRelativeRotation(Rotation);
+
+
+	}
+	
+}
+
 
 
 void AActionPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ActionPlayerController.generated.h"
 
+class UActionCameraComponent;
 class UInGameMenu_EP;
 class AArtilleryActionPawn;
 class AActionPawn;
@@ -87,6 +88,9 @@ public:
 
 	virtual void SetupInputComponent() override;
 
+	void setViewCamera();
+
+	virtual void Tick(float DeltaSeconds) override;
 
 private:
 
@@ -106,6 +110,8 @@ private:
 	//El uproperty se debe a que en caso de no ponerlo el engine piensa que no se usa y es recogido por el garbage collection, bueno saberlo despues de 3 horas buscando un error que no existe :)
 	UPROPERTY()
 	UInGameMenu_EP* inGameMenu;
+
+	UActionCameraComponent* myPawnCamera;
 
 	bool isInGameMenuOpen;
 };
