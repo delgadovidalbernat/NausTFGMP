@@ -8,13 +8,14 @@
 APilotActionPawn::APilotActionPawn()
 {
 
-
+	bReplicates = true;
 }
 
 void APilotActionPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	//spawnDefaultCamera();
+
+	spawnDefaultCamera();
 
 }
 
@@ -27,7 +28,7 @@ void APilotActionPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	else
 	{
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "No es possible borrar una ActionCamera que no existe");
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "No es possible borrar una ActionCamera que no existe");
 	}
 }
 
@@ -36,8 +37,6 @@ AActionCamera* APilotActionPawn::getActionCamera()
 
 	return myCamera;
 }
-
-
 
 void APilotActionPawn::spawnDefaultCamera()
 {
@@ -48,7 +47,14 @@ void APilotActionPawn::spawnDefaultCamera()
 	FRotator spawnRotation = GetActorRotation();
 	spawnRotation += FRotator(-30.f, 0.f, 0.f);
 
+	
 	myCamera = GetWorld()->SpawnActor<AActionCamera>(spawnLocation, spawnRotation);
+
+	myCamera->SetOwner(this);
+	//FString string = FString::Printf(TEXT("%s"), *myCamera->GetOwner()->GetName());
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, "cam Spawned");
 }
+
+
 
 

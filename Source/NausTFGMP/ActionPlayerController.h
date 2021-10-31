@@ -88,10 +88,10 @@ public:
 
 	virtual void SetupInputComponent() override;
 	
-	void SetViewPilot();
+	void SetViewPilot(APilotActionPawn* myPilotPawn);
 
-	
-	virtual void OnPossess(APawn* InPawn) override;
+	virtual void Tick(float DeltaSeconds) override;
+
 
 private:
 
@@ -115,5 +115,7 @@ private:
 	UInGameMenu_EP* inGameMenu;
 
 	bool isInGameMenuOpen;
+
+	FTimerHandle timerHandle;
 
 };

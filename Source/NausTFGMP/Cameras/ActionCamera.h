@@ -14,8 +14,12 @@ class NAUSTFGMP_API AActionCamera : public ACameraActor
 {
 	GENERATED_BODY()
 
+public:
+
 
 public:
 
 	AActionCamera();
+
+	virtual void BeginPlay() override;
 };

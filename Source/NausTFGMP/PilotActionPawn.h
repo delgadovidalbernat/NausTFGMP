@@ -25,8 +25,10 @@ public:
 
 	AActionCamera* getActionCamera();
 
-	//UFUNCTION(Server, Reliable)
+	//UFUNCTION(Client, Reliable)
 	void spawnDefaultCamera();
+
+
 
 private:
 	

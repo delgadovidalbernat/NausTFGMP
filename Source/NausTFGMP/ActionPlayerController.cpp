@@ -35,7 +35,7 @@ AActionPlayerController::AActionPlayerController() {
 	isInGameMenuOpen = false;
 
 	PlayerCameraManagerClass = AActionCameraManager::StaticClass();
-
+	
 }
 
 
@@ -55,7 +55,7 @@ void AActionPlayerController::BeginPlay() {
 
 	//Binding signals
 	BindSignals();
-
+	
 }
 
 UClass* AActionPlayerController::GetPlayerPawnClass()
@@ -271,6 +271,9 @@ void AActionPlayerController::BindSignals()
 		inGameMenu->signalOnClickBack.AddDynamic(this, &AActionPlayerController::UnloadInGameMenu);
 
 	}
+
+
+
 }
 
 void AActionPlayerController::CreaMainMenu()
@@ -308,57 +311,42 @@ void AActionPlayerController::SetupInputComponent()
 		InputComponent->BindAction("OpenInGameMenu", EInputEvent::IE_Pressed, this, &AActionPlayerController::LoadInGameMenu);
 }
 
-void AActionPlayerController::SetViewPilot()
+void AActionPlayerController::SetViewPilot(APilotActionPawn* myPilotPawn)
 {
-	APilotActionPawn* myPilotPawn = dynamic_cast<APilotActionPawn*>(myPawn);
+
 
 	if (myPilotPawn)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "Tengo pawn");
+		//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo pawn");
 		AActionCamera* myPawnCamera = myPilotPawn->getActionCamera();
 
 		if (myPawnCamera)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "Tengo cam");
-			SetViewTarget(myPawnCamera);
+			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo cam");
+
+			FViewTargetTransitionParams dummyTransitionParams;
+			
+			if (GetViewTarget() != myPawnCamera) {
+
+				SetViewTarget(myPawnCamera, dummyTransitionParams);
+				
+			}
 		}else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "No tengo cam");
+			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "No tengo cam");
 		}
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "No tengo pawn");
 	}
 	
 }
 
-
-void AActionPlayerController::OnPossess(APawn* MovieSceneBlends)
+void AActionPlayerController::Tick(float DeltaSeconds)
 {
-	Super::OnPossess(MovieSceneBlends);
+	Super::Tick(DeltaSeconds);
 
-	if (MovieSceneBlends)
-		myPawn = dynamic_cast<AActionPawn*>(MovieSceneBlends);
+	if(APilotActionPawn* myPilotPawn = dynamic_cast<APilotActionPawn*>(GetPawn()))
+		SetViewPilot(myPilotPawn);
 
-	if(myPawn)
-	{
 
-		APilotActionPawn* myPilotPawn = dynamic_cast<APilotActionPawn*>(myPawn);
-
-		if(myPilotPawn)
-		{
-			
-			myPilotPawn->spawnDefaultCamera();
-			SetViewPilot();
-
-		}else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, "No tengo Pilotpawn para poseer");
-
-		}
-
-	}
 }
 
 
