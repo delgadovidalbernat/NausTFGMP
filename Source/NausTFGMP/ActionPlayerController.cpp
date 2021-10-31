@@ -326,19 +326,20 @@ void AActionPlayerController::setViewCamera()
 	{
 
 		FVector Location = GetPawn()->GetActorLocation();
-		FVector zDirection(0.f, 0.f, 1.f);
-		FVector xDirection(1.f, 0.f, 0.f);
+		FVector zDirection = GetPawn()->GetActorUpVector();
+		FVector forward = GetPawn()->GetActorForwardVector();
 
-		FRotator Rotation = GetPawn()->GetActorRotation();
-		FRotator yRotation(0.f, 1.f, 0.f);
+		FRotator Rotation = GetPawn()->GetViewRotation();
+		FRotator yRotation(1.f, 0.f, 0.f);
 
-		Location -= xDirection * 300;
-		Rotation += yRotation * 15.f;
+		Location += forward * -400 + zDirection * 200.f;
+		Rotation += yRotation * -25.f;
 
-		UActionCameraComponent* camera = pawn->getCamera();
-		camera->SetRelativeLocation(Location);
-		//camera->SetRelativeRotation(Rotation);
+		if (UActionCameraComponent* camera = pawn->getCamera())
+		{
 
+			camera->SetWorldLocationAndRotation(Location, Rotation);
+		}
 
 	}
 	
