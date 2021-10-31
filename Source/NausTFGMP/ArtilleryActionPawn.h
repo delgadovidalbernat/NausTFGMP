@@ -13,5 +13,8 @@ UCLASS()
 class NAUSTFGMP_API AArtilleryActionPawn : public AActionPawn
 {
 	GENERATED_BODY()
-	
+
+
+public:
+	virtual void spawnDefaultCamera() override;
 };

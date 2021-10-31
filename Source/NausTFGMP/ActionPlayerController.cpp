@@ -6,6 +6,7 @@
 #include "ActionGameMode.h"
 #include "PilotActionPawn.h"
 #include "ArtilleryActionPawn.h"
+#include "DefaultActionPawn.h"
 #include "ActionPawn.h"
 #include "Cameras/ActionCamera.h"
 #include "Cameras/ActionCameraManager.h"
@@ -21,11 +22,8 @@ AActionPlayerController::AActionPlayerController() {
 	//El actor se replica para que se tenga en cuenta las modificaciones del servidor, por ejemplo el cambi� de defaultPawn
 	bReplicates = true;
 
-	//Busca el PilotActionBP y guarda la referencia de la clase
-	InitializePilotPawnClass();
-
-	ConstructorHelpers::FClassFinder <AArtilleryActionPawn> refArtilleryActionPawnBP(TEXT("/Game/Blueprints/Action/ArtilleryActionPawn_BP"));
-	artilleryClass = refArtilleryActionPawnBP.Class;
+	//Busca los ActionBP y guarda la referencia de las clase
+	InitializePawnClasses();
 
 	//Busca el mainMenuBP y guarda la referencia de la clase
 	InitializeMainMenuClass();
@@ -44,7 +42,7 @@ void AActionPlayerController::BeginPlay() {
 	Super::BeginPlay();
 
 	//Por defecto el usuario usar� un pawn de tipo PilotAction, en caso de no haver pawn por defecto gameMode usara defaultPawn de GameMode
-	SetPilot();
+	SetDefaultActionPawn();
 
 	CreaMainMenu();
 
@@ -118,6 +116,24 @@ void AActionPlayerController::SetPilot_Implementation()
 
 }
 
+void AActionPlayerController::SetDefaultActionPawn_Implementation()
+{
+
+	//El cliente debe decidir que pawn quiere, de otra manera si usaramos otro metodo mas personalizado para elegir el pawn y el servidor tambi�n ejecuta esta instruccion todos tendrian el mismo pawn definido por el servidor
+	if (IsLocalController())
+	{
+		ServerSetPlayerControllerPawn(defaultActionPawnClass);
+
+		if (isInGameMenuOpen)
+		{
+
+			UnloadInGameMenu();
+		}
+
+	}
+
+}
+
 void AActionPlayerController::SetArtillery_Implementation()
 {
 	//El cliente debe decidir que pawn quiere, de otra manera si usaramos otro metodo mas personalizado para elegir el pawn y el servidor tambi�n ejecuta esta instruccion todos tendrian el mismo pawn definido por el servidor
@@ -170,6 +186,29 @@ void AActionPlayerController::InitializePilotPawnClass()
 
 	ConstructorHelpers::FClassFinder <APilotActionPawn> pilotClassBP(TEXT("/Game/Blueprints/Action/PilotActionPawn_BP"));
 	pilotClass = pilotClassBP.Class;
+}
+
+void AActionPlayerController::InitializeArtillryPawnClass()
+{
+
+	ConstructorHelpers::FClassFinder <AArtilleryActionPawn> refArtilleryActionPawnBP(TEXT("/Game/Blueprints/Action/ArtilleryActionPawn_BP"));
+	artilleryClass = refArtilleryActionPawnBP.Class;
+}
+
+void AActionPlayerController::InitializeDefaultActionPawnClass()
+{
+	
+	ConstructorHelpers::FClassFinder <ADefaultActionPawn> actionClassBP(TEXT("/Game/Blueprints/Action/DefaultActionPawn_BP"));
+	defaultActionPawnClass = actionClassBP.Class;
+
+}
+
+void AActionPlayerController::InitializePawnClasses()
+{
+
+	InitializeDefaultActionPawnClass();
+	InitializePilotPawnClass();
+	InitializeArtillryPawnClass();
 }
 
 void AActionPlayerController::LoadMainMenu()
@@ -339,12 +378,82 @@ void AActionPlayerController::SetViewPilot(APilotActionPawn* myPilotPawn)
 	
 }
 
+void AActionPlayerController::SetViewDefaultActionPawn(ADefaultActionPawn* myDefaultActionPawn)
+{
+
+	if (myDefaultActionPawn)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo pawn");
+		AActionCamera* myPawnCamera = myDefaultActionPawn->getActionCamera();
+
+		if (myPawnCamera)
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo cam");
+
+			FViewTargetTransitionParams dummyTransitionParams;
+
+			if (GetViewTarget() != myPawnCamera) {
+
+				SetViewTarget(myPawnCamera, dummyTransitionParams);
+
+			}
+		}
+		else
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "No tengo cam");
+		}
+	}
+}
+
+void AActionPlayerController::SetViewArtillery(AArtilleryActionPawn* myArtilleryPawn)
+{
+
+	if (myArtilleryPawn)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo pawn");
+		AActionCamera* myPawnCamera = myArtilleryPawn->getActionCamera();
+
+		if (myPawnCamera)
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo cam");
+
+			FViewTargetTransitionParams dummyTransitionParams;
+
+			if (GetViewTarget() != myPawnCamera) {
+
+				SetViewTarget(myPawnCamera, dummyTransitionParams);
+
+			}
+		}
+		else
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "No tengo cam");
+		}
+	}
+}
+
 void AActionPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
 	if(APilotActionPawn* myPilotPawn = dynamic_cast<APilotActionPawn*>(GetPawn()))
+	{
+
 		SetViewPilot(myPilotPawn);
+	}
+
+	if (AArtilleryActionPawn* myArtilleryPawn = dynamic_cast<AArtilleryActionPawn*>(GetPawn()))
+	{
+
+		SetViewArtillery(myArtilleryPawn);
+	}
+
+	if (ADefaultActionPawn* myDefaultActionPawn = dynamic_cast<ADefaultActionPawn*>(GetPawn()))
+	{
+
+		SetViewDefaultActionPawn(myDefaultActionPawn);
+	}
+		
 
 
 }

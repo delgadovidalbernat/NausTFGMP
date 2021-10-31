@@ -21,16 +21,8 @@ public:
 
 	virtual void BeginPlay() override;
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	AActionCamera* getActionCamera();
-
-	//UFUNCTION(Client, Reliable)
-	void spawnDefaultCamera();
-
-
-
-private:
+	
+protected:
 	
 	AActionCamera* myCamera;
 };

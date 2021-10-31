@@ -3,6 +3,8 @@
 
 #include "ActionPawn.h"
 
+#include "Cameras/ActionCamera.h"
+
 // Sets default values
 AActionPawn::AActionPawn()
 {
@@ -15,7 +17,21 @@ AActionPawn::AActionPawn()
 void AActionPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	spawnDefaultCamera();
+}
+
+void AActionPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (myCamera)
+		myCamera->Destroy();
+	else
+	{
+
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "No es possible borrar una ActionCamera que no existe");
+	}
 }
 
 // Called every frame
@@ -31,5 +47,28 @@ void AActionPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	
+}
+
+AActionCamera* AActionPawn::getActionCamera()
+{
+
+	return myCamera;
+}
+
+void AActionPawn::spawnDefaultCamera()
+{
+
+	FVector spawnLocation = GetActorLocation();
+	spawnLocation += GetActorForwardVector() * -300 + GetActorUpVector() * 150;
+
+	FRotator spawnRotation = GetActorRotation();
+	spawnRotation += FRotator(-30.f, 0.f, 0.f);
+
+
+	myCamera = GetWorld()->SpawnActor<AActionCamera>(spawnLocation, spawnRotation);
+
+	myCamera->SetOwner(this);
+	//FString string = FString::Printf(TEXT("%s"), *myCamera->GetOwner()->GetName());
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, "cam Spawned");
 }
 

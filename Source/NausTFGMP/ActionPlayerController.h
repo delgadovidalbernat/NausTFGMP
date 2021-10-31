@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ActionPlayerController.generated.h"
 
+class ADefaultActionPawn;
 class AActionCamera;
 class UInGameMenu_EP;
 class AArtilleryActionPawn;
@@ -44,6 +45,12 @@ public:
 	void SetPilot();
 	void SetPilot_Implementation();
 
+	//Funcion que desde el cliente asignara a Pilot como Pawn del PlayerController  
+	UFUNCTION(Client, Reliable)
+	void SetDefaultActionPawn();
+	void SetDefaultActionPawn_Implementation();
+
+
 	//Funcion que desde el cliente asignara a Artillery como Pawn del PlayerController  
 	UFUNCTION(Client, Reliable)
 	void SetArtillery();
@@ -61,6 +68,12 @@ public:
 	void InitializeInGameMenuClass();
 
 	void InitializePilotPawnClass();
+
+	void InitializeArtillryPawnClass();
+
+	void InitializeDefaultActionPawnClass();
+
+	void InitializePawnClasses();
 
 	void LoadMainMenu();
 
@@ -90,6 +103,10 @@ public:
 	
 	void SetViewPilot(APilotActionPawn* myPilotPawn);
 
+	void SetViewDefaultActionPawn(ADefaultActionPawn* myPilotPawn);
+
+	void SetViewArtillery(AArtilleryActionPawn* myPilotPawn);
+
 	virtual void Tick(float DeltaSeconds) override;
 
 
@@ -102,8 +119,9 @@ private:
 	AActionPawn* myPawn;
 
 	//Referencia a classes de possibles pawn entre las que el usuario puede escoger
-	TSubclassOf<APilotActionPawn> pilotClass;
-	TSubclassOf<AArtilleryActionPawn> artilleryClass;
+	TSubclassOf<AActionPawn> pilotClass;
+	TSubclassOf<AActionPawn> artilleryClass;
+	TSubclassOf<AActionPawn> defaultActionPawnClass;
 
 	TSubclassOf<UMainMenu_EP> mainMenuClass;
 	UPROPERTY()
