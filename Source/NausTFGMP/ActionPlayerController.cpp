@@ -350,68 +350,15 @@ void AActionPlayerController::SetupInputComponent()
 		InputComponent->BindAction("OpenInGameMenu", EInputEvent::IE_Pressed, this, &AActionPlayerController::LoadInGameMenu);
 }
 
-void AActionPlayerController::SetViewPilot(APilotActionPawn* myPilotPawn)
+
+
+void AActionPlayerController::SetViewPawn(AActionPawn* actionPawn)
 {
 
-
-	if (myPilotPawn)
+	if (actionPawn)
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo pawn");
-		AActionCamera* myPawnCamera = myPilotPawn->getActionCamera();
-
-		if (myPawnCamera)
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo cam");
-
-			FViewTargetTransitionParams dummyTransitionParams;
-			
-			if (GetViewTarget() != myPawnCamera) {
-
-				SetViewTarget(myPawnCamera, dummyTransitionParams);
-				
-			}
-		}else
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "No tengo cam");
-		}
-	}
-	
-}
-
-void AActionPlayerController::SetViewDefaultActionPawn(ADefaultActionPawn* myDefaultActionPawn)
-{
-
-	if (myDefaultActionPawn)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo pawn");
-		AActionCamera* myPawnCamera = myDefaultActionPawn->getActionCamera();
-
-		if (myPawnCamera)
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo cam");
-
-			FViewTargetTransitionParams dummyTransitionParams;
-
-			if (GetViewTarget() != myPawnCamera) {
-
-				SetViewTarget(myPawnCamera, dummyTransitionParams);
-
-			}
-		}
-		else
-		{
-			//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "No tengo cam");
-		}
-	}
-}
-
-void AActionPlayerController::SetViewArtillery(AArtilleryActionPawn* myArtilleryPawn)
-{
-
-	if (myArtilleryPawn)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Yellow, "Tengo pawn");
-		AActionCamera* myPawnCamera = myArtilleryPawn->getActionCamera();
+		AActionCamera* myPawnCamera = actionPawn->getActionCamera();
 
 		if (myPawnCamera)
 		{
@@ -436,25 +383,11 @@ void AActionPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if(APilotActionPawn* myPilotPawn = dynamic_cast<APilotActionPawn*>(GetPawn()))
+	if (AActionPawn* myPawn = dynamic_cast<AActionPawn*>(GetPawn()))
 	{
 
-		SetViewPilot(myPilotPawn);
+		SetViewPawn(myPawn);
 	}
-
-	if (AArtilleryActionPawn* myArtilleryPawn = dynamic_cast<AArtilleryActionPawn*>(GetPawn()))
-	{
-
-		SetViewArtillery(myArtilleryPawn);
-	}
-
-	if (ADefaultActionPawn* myDefaultActionPawn = dynamic_cast<ADefaultActionPawn*>(GetPawn()))
-	{
-
-		SetViewDefaultActionPawn(myDefaultActionPawn);
-	}
-		
-
 
 }
 

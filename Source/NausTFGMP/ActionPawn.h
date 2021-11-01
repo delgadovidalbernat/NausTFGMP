@@ -22,7 +22,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
+	//Llamado cuando el actor abandona el juego
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
@@ -32,8 +32,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	//Autodescriptivo
 	AActionCamera* getActionCamera();
 
+	//Spawn de la camera
 	virtual void spawnDefaultCamera();
 
 protected:

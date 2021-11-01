@@ -63,50 +63,65 @@ public:
 	//Funcion que assiganarà a las variables replicadas las condiciones de replicacion
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	//Busca y guarda referencia al blueprint MainMenu_BP
 	void InitializeMainMenuClass();
 
+	//Busca y guarda referencia al blueprint InGameMenuClass
 	void InitializeInGameMenuClass();
 
+	//Busca y guarda referencia al blueprint PilotPawnClass
 	void InitializePilotPawnClass();
 
+	//Busca y guarda referencia al blueprint ArtillryPawnClass
 	void InitializeArtillryPawnClass();
 
+	//Busca y guarda referencia al blueprint DefaultActionPawnClass
 	void InitializeDefaultActionPawnClass();
 
+	//Agrupación de las tres funciones anteriores
 	void InitializePawnClasses();
 
+	//Despliega MainMenu en la pantalla
 	void LoadMainMenu();
 
+	//Elimina MainMenu de la pantalla
 	UFUNCTION()
 	void UnloadMainMenu();
 
+	//Despliega InGameMenu en la pantalla
 	UFUNCTION()
 	void LoadInGameMenu();
 
+	//Elimina InGameMenu de la pantalla
 	UFUNCTION()
 	void UnloadInGameMenu();
 
+	//Muestra cursor en la pantalla y lo desbloquea
 	void ShowNotLockingMouseCursor(UUserWidget* UIMenu);
 
+	//Oculta cursor de la pantalla y lo bloquea
 	void HideAndLockMouseCursor(UUserWidget* UIMenu);
 
+	//Enlaza todas las signals de distintas classes con delegates a funciones del PC
 	void BindSignals();
 
+	//Crea widget que contiene MainMenu
 	void CreaMainMenu();
 
+	//Crea widget que contiene InGameMenu
 	void CreaInGameMenu();
 
+	//En el editor sale del modo PIE, en aplicación sale al escritorio
 	UFUNCTION()
 	void ExitGame();
 
+	//Bincula inputs del usuario que se usarà en el controller, lo que no se controle aqui passara al inpout del pawn
 	virtual void SetupInputComponent() override;
-	
-	void SetViewPilot(APilotActionPawn* myPilotPawn);
 
-	void SetViewDefaultActionPawn(ADefaultActionPawn* myPilotPawn);
+	//Se encarga de recoger la camara principal del pawn controlado y la usa
+	void SetViewPawn(AActionPawn* myPilotPawn);
 
-	void SetViewArtillery(AArtilleryActionPawn* myPilotPawn);
-
+	//Se llama cada frame
 	virtual void Tick(float DeltaSeconds) override;
 
 
@@ -116,24 +131,27 @@ private:
 	UPROPERTY(Replicated)
 	TSubclassOf<AActionPawn> myPawnClass;
 
-	AActionPawn* myPawn;
-
 	//Referencia a classes de possibles pawn entre las que el usuario puede escoger
 	TSubclassOf<AActionPawn> pilotClass;
 	TSubclassOf<AActionPawn> artilleryClass;
 	TSubclassOf<AActionPawn> defaultActionPawnClass;
 
+	//referencia a la classe blueprint de mainMenu
 	TSubclassOf<UMainMenu_EP> mainMenuClass;
+
+	//instancia de la clase mainMenu
 	UPROPERTY()
 	UMainMenu_EP* mainMenu;
 
+	//referencia a la classe blueprint de inGameMenuClass
 	TSubclassOf<UInGameMenu_EP> inGameMenuClass;
+
 	//El uproperty se debe a que en caso de no ponerlo el engine piensa que no se usa y es recogido por el garbage collection, bueno saberlo despues de 3 horas buscando un error que no existe :)
 	UPROPERTY()
 	UInGameMenu_EP* inGameMenu;
 
+	//refleja si el inGameMenu esta abierto
 	bool isInGameMenuOpen;
-
-	FTimerHandle timerHandle;
+	
 
 };

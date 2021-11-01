@@ -68,7 +68,6 @@ void AActionPawn::spawnDefaultCamera()
 	myCamera = GetWorld()->SpawnActor<AActionCamera>(spawnLocation, spawnRotation);
 
 	myCamera->SetOwner(this);
-	//FString string = FString::Printf(TEXT("%s"), *myCamera->GetOwner()->GetName());
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, "cam Spawned");
+	
 }
 

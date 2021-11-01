@@ -16,5 +16,6 @@ class NAUSTFGMP_API AArtilleryActionPawn : public AActionPawn
 
 
 public:
+	//spawn la camera de Artillery (era una opcion dejar esto para el controller, pero como cada pawn usa la camara de forma distinta hay que pensar-lo)
 	virtual void spawnDefaultCamera() override;
 };
