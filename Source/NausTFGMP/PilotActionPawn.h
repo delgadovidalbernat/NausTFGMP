@@ -21,8 +21,18 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	void PitchCamera(float AxisValue);
+
+	void YawCamera(float AxisValue);
+
 	
 protected:
 	
 	AActionCamera* myCamera;
+
+	FVector2D cameraInput;
 };
